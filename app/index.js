@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import styles from '../assets/styles'
 import TaskList from './TaskList'
 import utils from './utils/'
+import sp from './utils/sharePointService'
 
 class App extends React.Component {
     constructor(props){
@@ -10,11 +11,33 @@ class App extends React.Component {
       // REPEATING
       const localTasks = JSON.parse(localStorage.getItem('tasks'));
       this.state = {
-        tasks: localTasks
+        tasks: localTasks,
+        spTasks: []
       }
       this.handleTaskInput = this.handleTaskInput.bind(this);
       this.handleTaskClick = this.handleTaskClick.bind(this);
       this.handleTaskDelete = this.handleTaskDelete.bind(this);
+
+
+
+    }
+    componentDidMount(){
+        sp.getTasks().then(data => {
+          const results = data.d.results
+          const finalData = results.map(item => {
+
+            return {
+              title: item.Title,
+              id: item.Id,
+              completed: item.Completed,
+              date: utils.createdDate(item.Created)
+            }
+          })
+          this.setState({
+            spTasks: finalData
+          })
+        })
+
 
     }
     handleTaskInput(e){
@@ -63,21 +86,24 @@ class App extends React.Component {
       })
       localStorage.setItem('tasks', JSON.stringify(this.state.tasks));
     }
-
+    puke(object){
+      return <pre>{JSON.stringify(object, null, ' ')}</pre>
+    }
     render() {
 
       return (
         <div className="container text-center" style={styles.container}>
-          <h1>Simple To-Do List<br /><small>small is a tag for the headers</small> </h1>
+
+          <h1>Simple To-Do List<br /><small>Coming from Sharepoint!</small> </h1>
             <div className="form-group">
               <form onSubmit={this.handleTaskInput}>
-                <input style={styles.text_input} type="text"  placeholder="+ Add a New Task" className="form-control" />
+                <input style={styles.text_input} type="text"  placeholder="+ Wont work with SharePoint" className="form-control" />
               </form>
             </div>
             <div>
-              <TaskList onTaskDelete={this.handleTaskDelete} onTaskClick={this.handleTaskClick} tasks={this.state.tasks} completed={false} />
+              <TaskList onTaskDelete={this.handleTaskDelete} onTaskClick={this.handleTaskClick} tasks={this.state.spTasks} completed={false} />
               <h4>Completed</h4>
-              <TaskList onTaskDelete={this.handleTaskDelete} onTaskClick={this.handleTaskClick} tasks={this.state.tasks} completed={true} />
+              <TaskList onTaskDelete={this.handleTaskDelete} onTaskClick={this.handleTaskClick} tasks={this.state.spTasks} completed={true} />
             </div>
         </div>
       );

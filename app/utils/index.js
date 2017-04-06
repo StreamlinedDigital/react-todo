@@ -26,8 +26,15 @@ const months = {
 
 const utils = {
   getCurrentDate: function(){
+
     const date = new Date();
-    
+
+    const AMPM = date.getHours() < 12 ? 'AM' : 'PM';
+    return `${months[date.getMonth()]} ${date.getDay()} ${date.getHours()}:${date.getMinutes()} ${AMPM}`
+  },
+  createdDate: function(timestamp){
+    const formattedTS = timestamp.replace(/\D/g, '')    
+    const date = new Date(Number(formattedTS));
     const AMPM = date.getHours() < 12 ? 'AM' : 'PM';
     return `${months[date.getMonth()]} ${date.getDay()} ${date.getHours()}:${date.getMinutes()} ${AMPM}`
   }
