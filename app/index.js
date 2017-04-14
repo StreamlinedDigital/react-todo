@@ -11,84 +11,68 @@ class App extends React.Component {
       // REPEATING
       const localTasks = JSON.parse(localStorage.getItem('tasks'));
       this.state = {
-        tasks: localTasks,
-        spTasks: []
+        tasks: []
       }
       this.handleTaskInput = this.handleTaskInput.bind(this);
       this.handleTaskClick = this.handleTaskClick.bind(this);
       this.handleTaskDelete = this.handleTaskDelete.bind(this);
-
-
-
     }
     componentDidMount(){
-        sp.getTasks().then(data => {
-          const results = data.d.results
-          const finalData = results.map(item => {
-
-            return {
-              title: item.Title,
-              id: item.Id,
-              completed: item.Completed,
-              date: utils.createdDate(item.Created)
-            }
-          })
+      sp.getTasks().then(data => {
           this.setState({
-            spTasks: finalData
+            tasks: data
           })
-        })
-
-
+      })
     }
     handleTaskInput(e){
       e.preventDefault();
-      // REPEATING
-      const localTasks = JSON.parse(localStorage.getItem('tasks'));
-      const tasks = this.state.tasks
-      let title = e.target.children[0].value;
-      const highest = tasks.map(item => item.id);
-      const highestID = Math.max(...highest) < 0 ? 0 : Math.max(...highest)
-      const newItem = {
-        title: title,
-        completed: false,
-        id: highestID + 1,
-        date: utils.getCurrentDate()
-      }
-
-      tasks.push(newItem)
-      this.setState({
-        tasks: tasks
+      sp.postTask(this.refs.todo.value)
+      .then(newTask => {
+          const oldState = this.state.tasks
+          const newState = [...oldState];
+          
+          newState.push({
+            title: newTask.Title,
+            completed: false,
+            id: newTask.Id
+          })
+          console.log(newState)
+          this.setState({
+            tasks: newState
+          })
       })
-      localStorage.setItem('tasks', JSON.stringify(this.state.tasks));
+
+
+
+
+
+
+
+
       e.target.reset();
+    }
+    handleTaskDelete(id){
+      sp.deleteTask(id)
+      const oldState = this.state.tasks
+      const newState = [...oldState];
+      const index = newState.findIndex(item => item.id === id)
+      newState.splice(index,1);
+      this.setState({
+        tasks: newState
+      })
 
     }
-    handleTaskDelete(e){
-      const id = e.target.dataset.id;
-      let array = this.state.tasks;
-      const task = array.filter(item => item.id == id);
-      const index = array.indexOf(task[0]);
-      array.splice(index, 1)
+    handleTaskClick(id){
+      sp.completeTask(id)
+      const oldState = this.state.tasks
+      const newState = [...oldState];
+      const index = newState.findIndex(item => item.id === id);
+      newState[index].completed = true;
       this.setState({
-        tasks: array
+        tasks: newState
       })
-      localStorage.setItem('tasks', JSON.stringify(this.state.tasks));
+    }
 
-    }
-    handleTaskClick(e){
-      // Got to be a better way of doing this
-      const id = e.target.dataset.id;
-      let array = this.state.tasks;
-      const task = array.filter(item => item.id == id);
-      task[0].completed = !task[0].completed
-      this.setState({
-        tasks: array
-      })
-      localStorage.setItem('tasks', JSON.stringify(this.state.tasks));
-    }
-    puke(object){
-      return <pre>{JSON.stringify(object, null, ' ')}</pre>
-    }
     render() {
 
       return (
@@ -97,13 +81,13 @@ class App extends React.Component {
           <h1>Simple To-Do List<br /><small>Coming from Sharepoint!</small> </h1>
             <div className="form-group">
               <form onSubmit={this.handleTaskInput}>
-                <input style={styles.text_input} type="text"  placeholder="+ Wont work with SharePoint" className="form-control" />
+                <input style={styles.text_input} type="text" ref="todo"  placeholder="+ Add to SharePoint" className="form-control" />
               </form>
             </div>
             <div>
-              <TaskList onTaskDelete={this.handleTaskDelete} onTaskClick={this.handleTaskClick} tasks={this.state.spTasks} completed={false} />
+              <TaskList onTaskDelete={this.handleTaskDelete} onTaskClick={this.handleTaskClick} tasks={this.state.tasks} completed={false} />
               <h4>Completed</h4>
-              <TaskList onTaskDelete={this.handleTaskDelete} onTaskClick={this.handleTaskClick} tasks={this.state.spTasks} completed={true} />
+              <TaskList onTaskDelete={this.handleTaskDelete} onTaskClick={this.handleTaskClick} tasks={this.state.tasks} completed={true} />
             </div>
         </div>
       );

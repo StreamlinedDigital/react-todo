@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Test component will render 1`] = `
+<div>
+  <h1>
+    Just testing out routes
+  </h1>
+</div>
+`;
