@@ -4,14 +4,15 @@ import styles from '../assets/styles'
 import TaskList from './TaskList'
 import utils from './utils/'
 import sp from './utils/sharePointService'
+import Loading from './Loading'
 
 class App extends React.Component {
     constructor(props){
       super(props)
-      // REPEATING
-      const localTasks = JSON.parse(localStorage.getItem('tasks'));
       this.state = {
-        tasks: []
+        tasks: [],
+        loading: false,
+        loggedIn: false
       }
       this.handleTaskInput = this.handleTaskInput.bind(this);
       this.handleTaskClick = this.handleTaskClick.bind(this);
@@ -19,9 +20,21 @@ class App extends React.Component {
     }
     componentDidMount(){
       sp.getTasks().then(data => {
+        console.log(data)
           this.setState({
-            tasks: data
+            tasks: data,
+            loading: true,
+            loggedIn: true
           })
+      })
+      .catch(error => {
+        if(error){
+          window.open(
+            'https://devstreamlined.sharepoint.com/',
+            '_blank'
+          )
+        }
+        console.log(error)
       })
     }
     handleTaskInput(e){
@@ -30,7 +43,7 @@ class App extends React.Component {
       .then(newTask => {
           const oldState = this.state.tasks
           const newState = [...oldState];
-          
+
           newState.push({
             title: newTask.Title,
             completed: false,
@@ -76,6 +89,11 @@ class App extends React.Component {
     render() {
 
       return (
+        <div>
+          {!this.state.loggedIn
+            ? <div className="sharepoint-alert"><h4>Please log in to SharePoint to view content</h4></div>
+            : ""
+          }
         <div className="container text-center" style={styles.container}>
 
           <h1>Simple To-Do List<br /><small>Coming from Sharepoint!</small> </h1>
@@ -85,11 +103,19 @@ class App extends React.Component {
               </form>
             </div>
             <div>
+              {this.state.loading
+              ?
+              <div>
               <TaskList onTaskDelete={this.handleTaskDelete} onTaskClick={this.handleTaskClick} tasks={this.state.tasks} completed={false} />
               <h4>Completed</h4>
               <TaskList onTaskDelete={this.handleTaskDelete} onTaskClick={this.handleTaskClick} tasks={this.state.tasks} completed={true} />
+              </div>
+              :
+              <Loading />
+              }
             </div>
         </div>
+      </div>
       );
     }
   }

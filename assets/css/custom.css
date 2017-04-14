@@ -46,7 +46,7 @@
   font-size: 26px;
   margin: 0 10px;
   opacity: 1;
-  transform: translateY(10px) scale(1);  
+  transform: translateY(10px) scale(1);
   transition: 0.5s all ease;
 }
 
@@ -74,4 +74,29 @@
   left: 0;
   text-align: right;
   padding: 2.5%;
+}
+
+
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.fa-spinner {
+  font-size: 40px;
+  color: #2CA8FF;
+  animation: spin 1s infinite;
+}
+
+
+.sharepoint-alert {
+  background-color: #2CA8FF;
+  padding: 1%;
+  color: #fff;
+  text-align: center;
 }
